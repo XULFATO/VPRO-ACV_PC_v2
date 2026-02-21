@@ -198,11 +198,11 @@ Public Sub Generar_LINEASVCA_ESP()
     ' 5 ── Activar modo rendimiento ────────────────────────────────────────
     PrepararCarpetasBase
     wsC.AutoFilterMode = False
+    EliminarHojaSiExiste HOJA_LINEAS, ThisWorkbook
     ActivarModoRendimiento
 
-    ' 6 ── Nueva hoja LINEASVCA ────────────────────────────────────────────
-    EliminarHojaSiExiste HOJA_LINEAS, ThisWorkbook
-    Set wsT  = ThisWorkbook.Worksheets.Add
+    ' 6 ── Nueva hoja LINEASVCA al final del libro ─────────────────────────
+    Set wsT = ThisWorkbook.Worksheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
     wsT.Name = HOJA_LINEAS
     CrearCabecerasLINEASVCA wsT
     filaNueva = 2

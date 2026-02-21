@@ -169,7 +169,7 @@ Public Sub Generar_LINEASVCA_POR()
 
     ' 7 ── Nueva hoja LINEASVCA ────────────────────────────────────────────
     EliminarHojaSiExiste HOJA_LINEAS, ThisWorkbook
-    Set wsT  = ThisWorkbook.Worksheets.Add
+    Set wsT = ThisWorkbook.Worksheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
     wsT.Name = HOJA_LINEAS
     CrearCabecerasLINEASVCA wsT
     filaNueva = 2

@@ -74,8 +74,8 @@ Public Sub ExportarVBA_A_FOTO()
 
     ' Crear / recrear hoja FOTO_VBA
     EliminarHojaSiExiste HOJA_FOTO, ThisWorkbook
-    Set ws   = ThisWorkbook.Sheets.Add
-    ws.Name  = HOJA_FOTO
+    Set ws  = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+    ws.Name = HOJA_FOTO
 
     ' Volcar en dos columnas
     totalBloques  = Application.WorksheetFunction.RoundUp(Len(codTotal) / TAM_BLOQUE, 0)
