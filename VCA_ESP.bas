@@ -21,7 +21,7 @@ Option Explicit
 
 ' Hojas que gestiona este proceso
 Private Function ESP_HojasDelProceso() As Variant
-    ESP_HojasDelProceso = Array(HOJA_DATOS_ESP, HOJA_LINEAS)
+    ESP_HojasDelProceso = Array(HOJA_LINEAS)
 End Function
 
 
