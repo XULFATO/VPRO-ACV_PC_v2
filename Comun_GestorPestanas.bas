@@ -141,61 +141,66 @@ End Sub
 
 '==========================================================================
 ' GestorPestanas_ReordenarVCA
-' Reordena las pestañas al finalizar un proceso VCA.
-' HOME siempre en posición 1.
+' Reordena pestañas al finalizar un proceso VCA.
+' Resultado final:
+'   HOME | hojaPrincipal | hojaDatos | LINEASVCA | hojaAlFinal | ...OLD's
+' Al terminar activa hojaPrincipal para que el usuario la vea.
 ' La pantalla debe estar OCULTA cuando se llama a esto.
-'
-' Parámetros:
-'   hojaPrincipal → VCA_ESP o VCA_POR (irá en posición 2)
-'   hojaDatos     → Contabilidad_Cuentas o Analisis Conceitos (pos 3)
-'   colorLineas   → color de pestaña para LINEASVCA
-'   hojaAlFinal   → la otra hoja de país que va al final (VCA_POR o VCA_ESP)
 '==========================================================================
 Public Sub GestorPestanas_ReordenarVCA(ByVal hojaPrincipal As String, _
                                         ByVal hojaDatos     As String, _
                                         ByVal colorLineas   As Long, _
                                         ByVal hojaAlFinal   As String)
-    ' Pantalla debe estar oculta — la gestiona el proceso llamante
+    Dim i As Integer
+
     With ThisWorkbook
 
-        ' Mover LINEASVCA antes de todo (luego se reubicará)
+        ' Estrategia: mover las OLD al final primero para que no estorben,
+        ' luego ordenar las hojas activas de atrás hacia adelante.
+
+        ' 1 ── Mover todas las OLD al final ───────────────────────────────
+        For i = .Worksheets.Count To 1 Step -1
+            If InStr(1, .Worksheets(i).Name, "_OLD_") > 0 Then
+                .Worksheets(i).Move After:=.Worksheets(.Worksheets.Count)
+            End If
+        Next i
+
+        ' 2 ── Mover hojaAlFinal justo antes de las OLD ───────────────────
+        If HojaExiste(hojaAlFinal, ThisWorkbook) Then
+            .Worksheets(hojaAlFinal).Move After:=.Worksheets(.Worksheets.Count)
+            ' Retroceder antes de las OLD
+            For i = .Worksheets.Count To 1 Step -1
+                If Not InStr(1, .Worksheets(i).Name, "_OLD_") > 0 Then
+                    If .Worksheets(i).Name <> hojaAlFinal Then
+                        .Worksheets(hojaAlFinal).Move After:=.Worksheets(i)
+                        Exit For
+                    End If
+                End If
+            Next i
+        End If
+
+        ' 3 ── Orden de hojas activas: LINEASVCA → hojaDatos → hojaPrincipal → HOME
+        '      Movemos hacia el principio de atrás hacia adelante
         If HojaExiste(HOJA_LINEAS, ThisWorkbook) Then
             .Worksheets(HOJA_LINEAS).Move Before:=.Worksheets(1)
             .Worksheets(HOJA_LINEAS).Tab.Color = colorLineas
         End If
 
-        ' Mover hoja de datos
         If HojaExiste(hojaDatos, ThisWorkbook) Then
             .Worksheets(hojaDatos).Move Before:=.Worksheets(1)
         End If
 
-        ' Mover hoja principal del proceso
         If HojaExiste(hojaPrincipal, ThisWorkbook) Then
             .Worksheets(hojaPrincipal).Move Before:=.Worksheets(1)
         End If
 
-        ' HOME siempre primera
         If HojaExiste(HOJA_HOME, ThisWorkbook) Then
             .Worksheets(HOJA_HOME).Move Before:=.Worksheets(1)
         End If
 
-        ' La otra hoja de país va al final (antes de las OLD)
-        If HojaExiste(hojaAlFinal, ThisWorkbook) Then
-            ' Buscar primera OLD para insertar antes
-            Dim i        As Integer
-            Dim posOLD   As Integer
-            posOLD = .Worksheets.Count
-            For i = 1 To .Worksheets.Count
-                If Left(.Worksheets(i).Name, 6) Like "##_OLD" Then
-                    posOLD = i - 1
-                    Exit For
-                End If
-            Next i
-            If posOLD >= 1 And posOLD < .Worksheets.Count Then
-                .Worksheets(hojaAlFinal).Move Before:=.Worksheets(posOLD + 1)
-            Else
-                .Worksheets(hojaAlFinal).Move After:=.Worksheets(.Worksheets.Count)
-            End If
+        ' 4 ── Activar hojaPrincipal al terminar ──────────────────────────
+        If HojaExiste(hojaPrincipal, ThisWorkbook) Then
+            .Worksheets(hojaPrincipal).Activate
         End If
 
     End With

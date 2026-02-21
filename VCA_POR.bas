@@ -78,6 +78,7 @@ Public Sub POR_LimpiarComentariosValidacion()
 
     colBase = celdaIni.Column
 
+    ' Limpiar comentarios con PREFIJO_VAL y restaurar color — igual que ESP
     For Each c In ws.UsedRange
         If Not c.Comment Is Nothing Then
             If Left(c.Comment.Text, Len(PREFIJO_VAL)) = PREFIJO_VAL Then
@@ -90,6 +91,7 @@ Public Sub POR_LimpiarComentariosValidacion()
         End If
     Next c
 
+    ' Limpiar colores residuales en columnas dinámicas
     ws.Columns(colBase).Interior.Color     = xlNone
     ws.Columns(colBase + 1).Interior.Color = xlNone
     ws.Columns(colBase + 2).Interior.Color = xlNone
@@ -286,13 +288,14 @@ Public Function Validar_Contabilidad_POR() As Boolean
                    Trim(ws.Cells(i, colHaber).Value)
         If Trim(CStr(clave)) <> "" And comboMay.Exists(clave) Then
             If Trim(comboAct) <> "|" And comboAct <> comboMay(clave) Then
-                ws.Cells(i, colBase).Interior.Color  = vbRed
-                ws.Cells(i, colDebe).Interior.Color  = vbRed
-                ws.Cells(i, colHaber).Interior.Color = vbRed
-                AddOrAppendComment ws.Cells(i, colBase), _
+                POR_MarcarError ws.Cells(i, colBase), vbRed, _
                     "AVISO – Enlace: " & clave & vbCrLf & _
                     "Esta fila : " & Replace(comboAct, "|", " / ") & vbCrLf & _
                     "Mayoritaria: " & Replace(comboMay(clave), "|", " / ")
+                POR_MarcarError ws.Cells(i, colDebe), vbRed, _
+                    "AVISO – Debe distinto al mayoritario"
+                POR_MarcarError ws.Cells(i, colHaber), vbRed, _
+                    "AVISO – Haber distinto al mayoritario"
                 hayError = True: nErrores = nErrores + 1
                 lista = lista & "· Fila " & i & " – Debe/Haber distinto al mayoritario." & vbCrLf
             End If
@@ -305,11 +308,12 @@ Public Function Validar_Contabilidad_POR() As Boolean
         Next v
         If esGestion Then
             If (debe = "" And haber <> "") Or (debe <> "" And haber = "") Then
-                ws.Cells(i, colBase).Interior.Color  = vbYellow
-                ws.Cells(i, colDebe).Interior.Color  = vbYellow
-                ws.Cells(i, colHaber).Interior.Color = vbYellow
-                AddOrAppendComment ws.Cells(i, colBase), _
+                POR_MarcarError ws.Cells(i, colBase), vbYellow, _
                     "AVISO – GESTIÓN: deben estar informados Debe y Haber"
+                POR_MarcarError ws.Cells(i, colDebe), vbYellow, _
+                    "AVISO – GESTIÓN: debe estar informado"
+                POR_MarcarError ws.Cells(i, colHaber), vbYellow, _
+                    "AVISO – GESTIÓN: debe estar informado"
                 hayError = True: nErrores = nErrores + 1
                 lista = lista & "· Fila " & i & " – GESTIÓN: faltan Debe y/o Haber." & vbCrLf
             End If
@@ -318,11 +322,12 @@ Public Function Validar_Contabilidad_POR() As Boolean
         ' R4: Enlace > 500
         If IsNumeric(enlace) Then
             If CLng(enlace) > 500 Then
-                ws.Cells(i, colBase).Interior.Color  = vbMagenta
-                ws.Cells(i, colDebe).Interior.Color  = vbMagenta
-                ws.Cells(i, colHaber).Interior.Color = vbMagenta
-                AddOrAppendComment ws.Cells(i, colBase), _
+                POR_MarcarError ws.Cells(i, colBase), vbMagenta, _
                     "ERROR – Enlace " & enlace & " supera el máximo (500)"
+                POR_MarcarError ws.Cells(i, colDebe), vbMagenta, _
+                    "ERROR – Enlace supera el máximo (500)"
+                POR_MarcarError ws.Cells(i, colHaber), vbMagenta, _
+                    "ERROR – Enlace supera el máximo (500)"
                 hayError = True: nErrores = nErrores + 1
                 lista = lista & "· Fila " & i & " – Enlace " & enlace & " > 500." & vbCrLf
             End If
