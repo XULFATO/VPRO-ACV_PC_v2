@@ -24,7 +24,7 @@ Option Explicit
 
 ' Hojas que gestiona este proceso
 Private Function POR_HojasDelProceso() As Variant
-    POR_HojasDelProceso = Array(HOJA_DATOS_POR, HOJA_LINEAS)
+    POR_HojasDelProceso = Array(HOJA_LINEAS)
 End Function
 
 
